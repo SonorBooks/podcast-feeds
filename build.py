@@ -49,3 +49,11 @@ t9 = f'''<?xml version="1.0" encoding="utf-8"?>
 open("site/t9.xml", "w", encoding="utf-8").write(t9)
 open("site/index.html", "w").write("ok")
 print("built", len(xml), xml.count("<item>"), size)
+
+# t10: same as prueba-7 (audio and covers on the VPS), only the feed URL on github.io
+h10 = src.split("<item>", 1)[0].replace("Free Audiobooks in English Test", "Free Audiobooks in English T10")
+h10 = re.sub(r'<atom:link href="[^"]+"', '<atom:link href="%s/t10.xml"' % base, h10)
+o10 = [it.replace("sonorbooks-us-t7:", "sonorbooks-us-t10:").rstrip() + "\n    " for it in items]
+x10 = h10 + "".join(o10).rstrip() + "\n  </channel>\n</rss>\n"
+open("site/t10.xml", "w", encoding="utf-8").write(x10)
+print("t10", len(x10), x10.count("<item>"), x10.count("hstgr"))
