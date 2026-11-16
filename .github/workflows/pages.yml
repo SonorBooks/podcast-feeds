@@ -1,0 +1,38 @@
+name: pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build site
+        run: |
+          mkdir -p site
+          B=https://srv1644251.hstgr.cloud/sonorbooks-catalogo-us
+          curl -fsSL -o site/cta.mp3 "$B/audio/cta-sonorbooks-us.mp3"
+          curl -fsSL -o site/cover.jpg "$B/podcast-cover.jpg"
+          curl -fsSL -o p7.xml "$B/rss-spotify/prueba-7.xml"
+          python3 build.py
+          ls -la site
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.d.outputs.page_url }}
+    steps:
+      - id: d
+        uses: actions/deploy-pages@v4
