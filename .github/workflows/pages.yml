@@ -3,6 +3,8 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * *"   # copia diaria de los feeds del VPS (mirror.py)
 permissions:
   contents: read
   pages: write
@@ -23,7 +25,8 @@ jobs:
           curl -fsSL -o site/cover.jpg "$B/podcast-cover.jpg"
           curl -fsSL -o p7.xml "$B/rss-spotify/prueba-7.xml"
           python3 build.py
-          ls -la site
+          python3 mirror.py
+          ls -la site site/*/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
