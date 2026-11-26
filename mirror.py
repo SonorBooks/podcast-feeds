@@ -37,8 +37,34 @@ def get(url: str) -> str:
     raise RuntimeError(f"{url}: {last}")
 
 
-def main() -> int:
+# Brasil (26/11/2026): los feeds ya salen con su URL de Pages en atom:self y el audio y las portadas en el R2 de la
+# cuenta de Cloudflare de Brasil (brasil@sonorbooks.com, bucket sonorbooks-catalogo-br). Se copian tal cual.
+BR_MEDIA = "https://pub-f98c7ebaa8294cd7bcc0d4d7b3b7a16c.r2.dev"
+
+
+def mirror_br() -> int:
+    import json
+    try:
+        info = json.loads(get(f"{BR_MEDIA}/rss/feeds.json"))
+    except Exception as exc:  # noqa: BLE001  (aún no publicado: no se copia nada)
+        print(f"br: sin feeds.json ({exc})", flush=True)
+        return 0
+    carpeta = Path("site") / "br"
+    carpeta.mkdir(parents=True, exist_ok=True)
     total = 0
+    for f in info["feeds"]:
+        xml = get(f"{BR_MEDIA}/rss/{f['file']}")
+        assert f'<atom:link href="{PAGES}/br/{f["file"]}" rel="self"' in xml, f"br {f['file']}: atom:self no es Pages"
+        items = xml.count("<item>")
+        assert items == f["episodes"], f"br {f['file']}: {items} episodios, {f['episodes']} esperados"
+        (carpeta / f["file"]).write_text(xml, encoding="utf-8")
+        total += items
+        print(f"br/{f['file']}: {items} episodios", flush=True)
+    return total
+
+
+def main() -> int:
+    total = mirror_br()
     for cc, (prefijo, vols) in PAISES.items():
         carpeta = Path("site") / cc
         carpeta.mkdir(parents=True, exist_ok=True)
