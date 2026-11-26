@@ -136,7 +136,7 @@ async function portadas() {
   const todo = obras.filter((w) => w.cover_src && !done.has(w.wid) && !failed[w.wid]);
   const workers = Number(process.env.WORKERS || 6);
   log(`portadas: ${obras.length} obras, ${done.size} subidas, ${Object.keys(failed).length} fallidas, ${todo.length} pendientes`);
-  let i = 0, n = 0, lastSave = Date.now();
+  let i = 0, n = 0, errs = 0, lastSave = Date.now();
   async function one(w) {
     for (let t = 0; t < 3; t++) {
       try {
@@ -157,7 +157,7 @@ async function portadas() {
         }
         await put(`covers/${w.wid}.jpg`, jpg, 'image/jpeg');
         done.add(w.wid); return;
-      } catch (err) { if (t === 2) { failed[w.wid] = String(err.message || err).slice(0, 120); } else await sleep(3000 * (t + 1)); }
+      } catch (err) { if (errs++ < 20) log('  error', w.wid, String(err.message || err).slice(0, 160)); if (t === 2) { failed[w.wid] = String(err.message || err).slice(0, 120); } else await sleep(3000 * (t + 1)); }
     }
   }
   await Promise.all(Array.from({ length: workers }, async () => {
@@ -269,7 +269,18 @@ async function verificar() {
   else log(`todo verificado: ${info.feeds.length} feeds, portadas, audio y fichas`);
 }
 
+async function prueba() {
+  const { put, mediaBase } = r2();
+  try { await put('prueba/hola.txt', Buffer.from('hola ' + new Date().toISOString()), 'text/plain'); log('R2 put: ok'); }
+  catch (err) { log('R2 put: ERROR', err.message); }
+  const w = readJson(path.join(HERE, 'obras.json')).find((x) => x.cover_src);
+  try { const r = await fetch(w.cover_src, { signal: AbortSignal.timeout(30000) }); log('portada', r.status, r.headers.get('content-type'), w.cover_src.slice(0, 80)); }
+  catch (err) { log('portada: ERROR', err.message); }
+  try { const r = await fetch(`${mediaBase}/prueba/hola.txt`); log('público', r.status, await r.text()); }
+  catch (err) { log('público: ERROR', err.message); }
+}
+
 const step = process.argv[2];
-const steps = { exportar, portadas, feeds, subir, verificar };
+const steps = { exportar, portadas, feeds, subir, verificar, prueba };
 if (!steps[step]) { console.log('uso: node rss_br.mjs exportar|portadas|feeds|subir|verificar'); process.exit(2); }
 await steps[step]();
