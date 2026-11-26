@@ -181,7 +181,8 @@ function feeds() {
   const audioLen = fs.statSync(path.join(HERE, T.audio)).size;
   const seconds = Number(e.AUDIO_SECONDS || 12);
   const now = new Date(Math.floor(Date.now() / 1000) * 1000);
-  fs.mkdirSync(path.join(HERE, 'rss'), { recursive: true });
+  const FP = e.FEED_PREFIX || 'rss';
+  fs.mkdirSync(path.join(HERE, FP), { recursive: true });
   const report = [];
   const nFeeds = Math.ceil(obras.length / PER_FEED);
   for (let i = 0; i < nFeeds; i++) {
@@ -220,7 +221,7 @@ function feeds() {
       + '    <itunes:explicit>false</itunes:explicit>\r\n    <itunes:type>episodic</itunes:type>\r\n'
       + `    <itunes:image href="${media}/podcast-cover.jpg" />\r\n    <image>\r\n      <url>${media}/podcast-cover.jpg</url>\r\n      <title>${esc(ftitle)}</title>\r\n      <link>${home}</link>\r\n    </image>\r\n`
       + items + '  </channel>\r\n</rss>\r\n';
-    fs.writeFileSync(path.join(HERE, 'rss', name), xml);
+    fs.writeFileSync(path.join(HERE, FP, name), xml);
     report.push({ file: name, title: ftitle, episodes: chunk.length, with_cover: chunk.filter((w) => have.has(w.wid)).length,
       sha256: crypto.createHash('sha256').update(xml).digest('hex'), first: chunk[0].title, last: chunk.at(-1).title });
     log(`${name}: ${chunk.length} episodios`);
@@ -230,22 +231,23 @@ function feeds() {
 
 async function subir() {
   const { put } = r2();
+  const FP = env().FEED_PREFIX || 'rss';
   await put(`audio/${T.audio}`, fs.readFileSync(path.join(HERE, T.audio)), 'audio/mpeg');
   await put('podcast-cover.jpg', fs.readFileSync(path.join(HERE, T.cover)), 'image/jpeg');
   for (const f of readJson(path.join(HERE, 'feeds.json')).feeds) {
-    await put(`rss/${f.file}`, fs.readFileSync(path.join(HERE, 'rss', f.file)), 'application/rss+xml; charset=utf-8', 'public, max-age=60');
+    await put(`${FP}/${f.file}`, fs.readFileSync(path.join(HERE, FP, f.file)), 'application/rss+xml; charset=utf-8', 'public, max-age=60');
     log('subido', f.file);
   }
-  await put('rss/feeds.json', fs.readFileSync(path.join(HERE, 'feeds.json')), 'application/json', 'public, max-age=60');
+  await put(`${FP}/feeds.json`, fs.readFileSync(path.join(HERE, 'feeds.json')), 'application/json', 'public, max-age=60');
 }
 
 async function verificar() {
-  const e = env(); const media = e.MEDIA_BASE.replace(/\/$/, '');
+  const e = env(); const media = e.MEDIA_BASE.replace(/\/$/, ''); const FP = e.FEED_PREFIX || 'rss';
   const info = readJson(path.join(HERE, 'feeds.json'));
   const fails = [];
   const get = async (u) => { const r = await fetch(u, { headers: { 'user-agent': 'Spotify/1.0', 'cache-control': 'no-cache' } }); return { status: r.status, buf: Buffer.from(await r.arrayBuffer()), type: r.headers.get('content-type') }; };
   for (const f of info.feeds) {
-    const u = `${media}/rss/${f.file}?v=${Date.now()}`;
+    const u = `${media}/${FP}/${f.file}?v=${Date.now()}`;
     const r = await get(u);
     const sha = crypto.createHash('sha256').update(r.buf).digest('hex');
     const items = (r.buf.toString('utf8').match(/<item>/g) || []).length;
