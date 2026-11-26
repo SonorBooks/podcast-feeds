@@ -29,7 +29,7 @@ cd ~/sonorbooks-br-rss-20261126
 
 - Pódcast: «Audiolivros grátis em português Vol. NN»; idioma `pt-br`; Arts › Books; dueño `brasil@sonorbooks.com`.
 - Episodio: «Audiolivro: {título} - {autor} Audiolivro - {título} Audiolivro»; descripción «OUÇA O AUDIOLIVRO COMPLETO GRÁTIS AQUI 👉 {ficha} *Sujeito a termos e condições.»; `guid` `sonorbooks-br:<id de la obra>`.
-- Audio (pendiente): «Para ouvir este audiolivro completo grátis, abra o link na descrição. Você pode ouvir sem pagar nada ou comparar os testes grátis das principais plataformas. Sujeito a termos e condições.» Voz Davi Andrei (pt-BR), Eleven v4.
+- Audio (`cta-sonorbooks-br.mp3`, 10,9 s, ficha en `audio-info.json`): «Para ouvir este audiolivro completo grátis, abra o link na descrição. Você pode ouvir sem pagar nada ou comparar os testes grátis das principais plataformas. Sujeito a termos e condições.» Voz Davi Andrei (pt-BR), Eleven v4.
 - Portada del pódcast: `podcast-cover-audiolivros-gratis.jpg` (`crear_portada.py … br`, mismo diseño que los demás países).
 
 Si el catálogo crece, las obras nuevas van a volúmenes nuevos: regenerar desde cero movería episodios de volumen.
