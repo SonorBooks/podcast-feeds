@@ -9,7 +9,8 @@ Un pódcast con un episodio por obra de `sonorbooks.com/br/`: el mismo audio cor
 | Catálogo | Servidor de la web (VPS `srv2192016`), versión activa de `countries/br` (el 26/11: `br-captura14-20261125`, 110.714 obras tras quitar 189 repetidas y las exclusiones de la web). No se rastrea la web |
 | Trabajo en el servidor | `~/sonorbooks-br-rss-20261126/` (`rss_br.mjs`, `correr.sh`, `.env` con las claves, logs y estado) |
 | Portadas, audio y feeds | Cloudflare de **Brasil** (cuenta `brasil@sonorbooks.com`, no la de siempre), R2 `sonorbooks-catalogo-br`, público en `https://pub-f98c7ebaa8294cd7bcc0d4d7b3b7a16c.r2.dev` (`covers/`, `audio/`, `rss/`, `podcast-cover.jpg`) |
-| URL que se da a Spotify y YouTube | `https://sonorbooks.github.io/podcast-feeds/br/feed-NN.xml` (copia diaria de `mirror.py`: Spotify no acepta feeds en `r2.dev` ni `workers.dev`) |
+| Feeds | `https://br.audiobrary.tech/feeds/feed-NN.xml` (todo en el dominio `br.audiobrary.tech`, R2 con dominio propio; `FEED_PREFIX=feeds`) y copia en Pages `https://sonorbooks.github.io/podcast-feeds/br/feed-NN.xml` (desde `rss/`) |
+| Spotify | Rechaza el alta («hosting domain is not supported») con todos los dominios probados el 26-27/11, también `br.audiobrary.tech`; feeds de control ajenos sí pasan. Pendiente de decisión de Joan |
 | Clave de R2 | Token «rss-catalogo-br-servidor»: lectura y escritura solo en ese bucket y solo desde la IP del servidor. Está únicamente en el `.env` del servidor (`chmod 600`). Nunca en Git ni en el chat |
 
 ## Cómo se ejecuta
