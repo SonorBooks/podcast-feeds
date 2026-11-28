@@ -54,7 +54,10 @@ def mirror_br() -> int:
     total = 0
     for f in info["feeds"]:
         xml = get(f"{BR_MEDIA}/rss/{f['file']}")
-        assert f'<atom:link href="{PAGES}/br/{f["file"]}" rel="self"' in xml, f"br {f['file']}: atom:self no es Pages"
+        if f'<atom:link href="{PAGES}/br/{f["file"]}" rel="self"' not in xml:
+            # 26/11: Spotify rechaza github.io; los feeds de Brasil se sirven desde su propio dominio. No se copian.
+            print(f"br: los feeds ya no apuntan a Pages; no se copian", flush=True)
+            return 0
         items = xml.count("<item>")
         assert items == f["episodes"], f"br {f['file']}: {items} episodios, {f['episodes']} esperados"
         (carpeta / f["file"]).write_text(xml, encoding="utf-8")
